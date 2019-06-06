@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-import os, requests, json, sys
+import requests
+import json
+from sys import argv
+from platform import mac_ver
+from os import environ, path, mkdir, chdir, system
 
 # Set Variables
-projectname = sys.argv[1]
-authorization_token = os.environ.get('GITHUBAPI')
+projectname = argv[1]
+authorization_token = environ.get('GITHUBAPI')
+
 
 def createprojectfolder(projectname):
-    home = os.path.expanduser('~')
+    home = path.expanduser('~')
     workdir = home + '/git/Personal/' + projectname
-    os.mkdir(workdir)
-    os.chdir(workdir)
+    mkdir(workdir)
+    chdir(workdir)
 
 
 def createreadme():
@@ -17,17 +22,17 @@ def createreadme():
 
 
 def initializegit():
-    os.system('git init')
-    os.system('git add README.md')
-    os.system('git commit -m "initial commit"')
+    system('git init')
+    system('git add README.md')
+    system('git commit -m "initial commit"')
 
 
 def githubremote(githuburl):
-    os.system('git remote add origin ' + githuburl)
+    system('git remote add origin ' + githuburl)
 
 
 def githubpush():
-    os.system('git push -u origin master')
+    system('git push -u origin master')
 
 
 def githubapi(projectname, authorization_token):
@@ -45,7 +50,11 @@ def githubapi(projectname, authorization_token):
         'has_wiki': True
     }
 
-    response = requests.post(uri, params=json.dumps(parameters), headers=header)
+    response = requests.post(
+        uri,
+        params=json.dumps(parameters),
+        headers=header
+    )
     if response.status_code == 201:
         print('Successfully created Repo')
         data = json.loads(response.content)
@@ -56,17 +65,29 @@ def githubapi(projectname, authorization_token):
 
 
 def openvscode():
-    os.system('code .')
+    system('code .')
 
 
-try:
-    createprojectfolder(projectname)
-    createreadme()
-    initializegit()
-    repourl = githubapi(projectname, authorization_token)
-    githubremote(repourl)
-    githubpush()
-    openvscode()
-except FileExistsError:
-    print('Project exists. Choose another name.')
-    exit()
+def checkos():
+    os = mac_ver()[0]
+    if os:
+        return True
+    else:
+        print('This script is only meant for macOS')
+        exit()
+
+
+if checkos() is True:
+    try:
+        createprojectfolder(projectname)
+        createreadme()
+        initializegit()
+        repourl = githubapi(projectname, authorization_token)
+        githubremote(repourl)
+        githubpush()
+        openvscode()
+    except FileExistsError:
+        print('Project exists. Choose another name.')
+        exit()
+else:
+    print('Error running script')
