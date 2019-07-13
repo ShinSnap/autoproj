@@ -56,16 +56,11 @@ def createprojectfolder(projectname):
 
 def initializegit():
     system('git init')
-    # system('git add README.md')
     system('git commit -m "initial commit"')
 
 
 def createreadme():
     open('README.md', 'a').close()
-
-
-def openvscode():
-    system('code .')
 
 
 def checkos():
@@ -85,10 +80,9 @@ if __name__ == '__main__':
             initializegit()
             github = GitHub(authorization_token, projectname)
             repourl = github.create_repo(private=True)
-            print(repourl)
             system('git remote add origin {}'.format(repourl))
             system('git pull origin master')
-            openvscode()
+            system('code .')
         except FileExistsError:
             print('Project exists. Choose another name.')
             exit()
